@@ -1,0 +1,268 @@
+/* ── reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+html { scroll-behavior: smooth }
+
+/* ── tokens ── */
+:root {
+  --bg:           #f7f4f0;
+  --card:         #ffffff;
+  --border:       #e4ddd6;
+  --text:         #1c1a18;
+  --sub:          #6e6860;
+  --accent:       #b83232;
+  --accent-bg:    #fef2f2;
+  --accent-bd:    #f5d0d0;
+  --code-bg:      #f0ece8;
+  --font:         'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  --r:            14px;
+  --shadow:       0 1px 4px rgba(0,0,0,.05), 0 4px 20px rgba(0,0,0,.06);
+}
+
+/* dark mode — toggled via .dark on <html> */
+.dark {
+  --bg:           #141210;
+  --card:         #1e1b19;
+  --border:       #2c2825;
+  --text:         #e6e0d8;
+  --sub:          #7a7068;
+  --accent:       #e05858;
+  --accent-bg:    #2a1414;
+  --accent-bd:    #3e1e1e;
+  --code-bg:      #252220;
+  --shadow:       0 1px 4px rgba(0,0,0,.3), 0 4px 20px rgba(0,0,0,.25);
+}
+
+/* ── base ── */
+body {
+  font-family:  var(--font);
+  background:   var(--bg);
+  color:        var(--text);
+  font-size:    17px;
+  line-height:  1.85;
+  min-height:   100svh;
+  transition:   background .2s, color .2s;
+}
+
+/* ── header ── */
+.site-header {
+  position:     sticky;
+  top:          0;
+  z-index:      50;
+  background:   color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding:      14px 16px 0;
+}
+
+.header-row {
+  display:      flex;
+  align-items:  center;
+  justify-content: space-between;
+  gap:          12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon { font-size: 1.6rem; line-height: 1 }
+
+.brand-name {
+  font-size:    1.05rem;
+  font-weight:  700;
+  color:        var(--accent);
+  letter-spacing: -.02em;
+}
+
+.brand-sub {
+  font-size:  .72rem;
+  color:      var(--sub);
+  margin-top: 1px;
+}
+
+/* dark toggle */
+.dark-btn {
+  flex-shrink: 0;
+  width:       36px;
+  height:      36px;
+  border:      1px solid var(--border);
+  border-radius: 50%;
+  background:  var(--card);
+  cursor:      pointer;
+  font-size:   1rem;
+  display:     flex;
+  align-items: center;
+  justify-content: center;
+  transition:  border-color .15s, background .15s;
+}
+.dark-btn:hover { border-color: var(--accent); background: var(--accent-bg) }
+
+/* chip nav */
+.chip-nav {
+  display:  flex;
+  gap:      6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding:  12px 0 14px;
+}
+.chip-nav::-webkit-scrollbar { display: none }
+
+.chip {
+  flex-shrink: 0;
+  padding:     5px 13px;
+  border:      1.5px solid var(--border);
+  border-radius: 99px;
+  font-size:   .72rem;
+  font-weight: 600;
+  color:       var(--sub);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:  border-color .15s, color .15s, background .15s;
+}
+.chip:hover, .chip:focus-visible {
+  border-color: var(--accent);
+  color:        var(--accent);
+  background:   var(--accent-bg);
+  outline:      none;
+}
+
+/* ── feed ── */
+.feed {
+  max-width:  660px;
+  margin:     0 auto;
+  padding:    22px 16px 72px;
+  display:    flex;
+  flex-direction: column;
+  gap:        18px;
+}
+
+/* ── card ── */
+.card {
+  background:    var(--card);
+  border:        1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow:    var(--shadow);
+  overflow:      hidden;
+  transition:    border-color .2s;
+}
+.card:target { border-color: var(--accent) }
+
+.card-meta {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             10px;
+  padding:         10px 20px;
+  background:      var(--accent-bg);
+  border-bottom:   1px solid var(--accent-bd);
+}
+
+.card-date {
+  font-size:   .7rem;
+  font-weight: 700;
+  color:       var(--accent);
+  letter-spacing: .01em;
+}
+
+.card-words {
+  font-size:   .68rem;
+  color:       color-mix(in srgb, var(--accent) 60%, var(--sub));
+  white-space: nowrap;
+}
+
+.card-body {
+  padding: 22px 22px 16px;
+}
+
+/* ── markdown content inside card ── */
+.vp-content h1 {
+  font-size:     1.18rem;
+  font-weight:   700;
+  line-height:   1.4;
+  margin-bottom: 16px;
+  color:         var(--text);
+}
+
+/* hide VitePress heading anchor links */
+.vp-content .header-anchor { display: none }
+
+.vp-content h2 {
+  font-size:  1rem;
+  font-weight: 600;
+  margin:     18px 0 8px;
+}
+
+.vp-content h3 {
+  font-size:  .92rem;
+  font-weight: 600;
+  margin:     14px 0 6px;
+}
+
+.vp-content p {
+  margin-bottom: 14px;
+}
+.vp-content p:last-child { margin-bottom: 0 }
+
+.vp-content strong { font-weight: 700 }
+
+.vp-content em {
+  font-style: italic;
+  color: color-mix(in srgb, var(--text) 80%, var(--sub));
+}
+
+.vp-content hr {
+  border:     none;
+  border-top: 1px dashed var(--border);
+  margin:     20px 0;
+}
+
+.vp-content code {
+  background:    var(--code-bg);
+  padding:       1px 6px;
+  border-radius: 4px;
+  font-size:     .88em;
+  font-family:   ui-monospace, monospace;
+}
+
+/* ── card footer ── */
+.card-top {
+  display:      block;
+  padding:      10px 20px;
+  border-top:   1px solid var(--border);
+  background:   var(--bg);
+  font-size:    .7rem;
+  font-weight:  600;
+  color:        var(--sub);
+  text-align:   right;
+  text-decoration: none;
+  transition:   color .15s;
+}
+.card-top:hover { color: var(--accent) }
+
+/* ── site footer ── */
+.site-footer {
+  max-width:  660px;
+  margin:     0 auto;
+  padding:    0 16px 48px;
+  text-align: center;
+  font-size:  .72rem;
+  color:      var(--sub);
+}
+.site-footer code {
+  background:    var(--code-bg);
+  padding:       1px 6px;
+  border-radius: 4px;
+  font-family:   ui-monospace, monospace;
+}
+
+/* ── mobile ── */
+@media (max-width: 400px) {
+  body { font-size: 16px }
+  .card-body { padding: 16px 16px 12px }
+  .card-meta { padding: 9px 16px }
+  .card-top  { padding: 9px 16px }
+}
