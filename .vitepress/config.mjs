@@ -4,7 +4,6 @@ export default defineConfig({
   title: 'Kể Chuyện Cười',
   description: 'Truyện cười ngắn tiếng Việt — mỗi truyện dưới 300 từ',
   lang: 'vi',
-  outDir: 'dist',
   // Joke files are consumed by the data loader only — not individual routes
   srcExclude: ['jokes/**/*.md'],
   head: [
