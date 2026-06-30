@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tuyển tập truyện cười ngắn tiếng Việt — mỗi truyện dưới 300 từ">
+  <title>Kể Chuyện Cười</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #faf8f5;
+      --surface:  #ffffff;
+      --border:   #e8e2d9;
+      --text:     #2c2a27;
+      --muted:    #8a8278;
+      --accent:   #c0392b;
+      --accent-light: #fdf2f1;
+      --shadow:   0 2px 12px rgba(0,0,0,0.07);
+      --radius:   14px;
+      --font:     'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 17px;
+      line-height: 1.8;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ── HEADER ── */
+    #top {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    }
+
+    .site-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .site-title .emoji { font-size: 1.3rem; }
+
+    .site-subtitle {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 2px;
+      font-weight: 400;
+    }
+
+    /* ── NAV ── */
+    .joke-nav {
+      margin-top: 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 14px;
+    }
+    .joke-nav::-webkit-scrollbar { display: none; }
+
+    .joke-nav ol {
+      display: flex;
+      gap: 8px;
+      list-style: none;
+      width: max-content;
+    }
+
+    .joke-nav a {
+      display: block;
+      padding: 6px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .joke-nav a:hover, .joke-nav a:focus {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+      outline: none;
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── CARDS ── */
+    .joke-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .joke-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--accent-light);
+      border-bottom: 1px solid #f0d5d3;
+      gap: 12px;
+    }
+
+    .joke-date {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.01em;
+    }
+
+    .word-count {
+      font-size: 0.7rem;
+      color: #b07068;
+      white-space: nowrap;
+    }
+
+    .joke-body {
+      padding: 22px 20px;
+    }
+
+    .joke-body h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .joke-body h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin: 16px 0 10px;
+    }
+
+    .joke-body h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 14px 0 8px;
+    }
+
+    .joke-body p {
+      margin-bottom: 14px;
+      color: var(--text);
+    }
+
+    .joke-body p:last-child { margin-bottom: 0; }
+
+    .joke-body strong { font-weight: 700; color: var(--text); }
+    .joke-body em { font-style: italic; }
+
+    .joke-body hr {
+      border: none;
+      border-top: 1px dashed var(--border);
+      margin: 20px 0;
+    }
+
+    .joke-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      text-align: right;
+    }
+
+    .back-top {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back-top:hover { color: var(--accent); }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      text-align: center;
+      padding: 24px 16px 40px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 400px) {
+      body { font-size: 16px; }
+      .joke-body { padding: 18px 16px; }
+      .joke-header { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="top">
+    <div class="site-title">
+      <span class="emoji">😄</span>
+      Kể Chuyện Cười
+    </div>
+    <p class="site-subtitle">4 truyện · mỗi truyện dưới 300 từ</p>
+    <nav class="joke-nav" aria-label="Danh sách truyện">
+      <ol>
+        <li><a href="#2026-06-30-07-00">Cuộc Họp Quan Trọng</a></li>
+        <li><a href="#2026-06-29-20-30">Người Lạc Quan</a></li>
+        <li><a href="#2026-06-29-09-15">Nghề Của Ba</a></li>
+        <li><a href="#2026-06-28-08-00">Bài Kiểm Tra Toán</a></li>
+      </ol>
+    </nav>
+  </div>
+
+  <main>
+    
+    <article class="joke-card" id="2026-06-30-07-00">
+      <header class="joke-header">
+        <time class="joke-date">Thứ ba, 30 tháng 6, 2026 — 07:00</time>
+        <span class="word-count">226 từ</span>
+      </header>
+      <div class="joke-body">
+        <h1>Cuộc Họp Quan Trọng</h1>
+<p>Sếp gửi email triệu tập toàn bộ phòng họp khẩn lúc 8 giờ sáng thứ Hai.</p>
+<p>Tiêu đề: <strong>"Vấn đề cực kỳ nghiêm trọng cần giải quyết ngay."</strong></p>
+<p>Cả phòng hoang mang suốt cuối tuần. Ai cũng đoán: cắt giảm nhân sự? Mất hợp đồng lớn? Công ty phá sản?</p>
+<p>Thứ Hai, 8 giờ đúng, mọi người ngồi im thin thít, mặt tái.</p>
+<p>Sếp bước vào, nhìn quanh một lượt, rồi dõng dạc lên tiếng:</p>
+<p>"Ai đã để <strong>cái muỗng duy nhất của phòng</strong> trong bồn rửa mà không rửa — suốt <strong>ba tuần liền</strong>?"</p>
+<hr>
+<p>Im lặng kéo dài mười giây.</p>
+<p>Rồi Minh — nhân viên mới nhất phòng — khẽ giơ tay: "Dạ... em?"</p>
+<p>Sếp gật đầu, giọng vẫn rất nghiêm: "Cảm ơn em đã thành thật. Đây là <strong>vấn đề quan trọng nhất</strong> phòng mình cần xử lý tháng này."</p>
+<p>Minh ngồi đực ra.</p>
+<p>Sếp tiếp tục: "Bởi vì mọi thứ lớn hơn — doanh số, deadline, KPI — đều đã ổn. Khi công ty <strong>không còn vấn đề to</strong> nữa, ta phải <strong>bảo vệ những thứ nhỏ</strong>. Như cái muỗng."</p>
+<p>Ông cười, cả phòng mới thở phào rồi cười theo.</p>
+<p>Từ hôm đó, cái muỗng được rửa sạch mỗi ngày. Không ai biết vì sợ sếp, hay vì thực sự hiểu ra điều gì đó.</p>
+<p>Có lẽ cả hai.</p>
+      </div>
+      <footer class="joke-footer">
+        <a href="#top" class="back-top">↑ Lên đầu</a>
+      </footer>
+    </article>
+
+    <article class="joke-card" id="2026-06-29-20-30">
+      <header class="joke-header">
+        <time class="joke-date">Thứ hai, 29 tháng 6, 2026 — 20:30</time>
+        <span class="word-count">232 từ</span>
+      </header>
+      <div class="joke-body">
+        <h1>Người Lạc Quan</h1>
+<p>Bác sĩ nhìn vào kết quả xét nghiệm, rồi nhìn bệnh nhân với vẻ mặt nghiêm trọng.</p>
+<p>"Anh Hải ơi, tôi có tin xấu và tin... cũng xấu."</p>
+<p>Anh Hải nuốt nước bọt: "Vậy tin xấu là gì?"</p>
+<p>"Anh bị dị ứng với cà phê, bia, thịt nướng, và... không khí điều hòa."</p>
+<p>Anh Hải tái mặt: "Trời ơi. Vậy tin cũng xấu là gì?"</p>
+<p>Bác sĩ ngừng một giây: "Tôi đã nói nhầm. Thực ra không có tin xấu thứ hai. Chỉ có tin xấu thứ nhất thôi — nhưng tôi biết với anh, <strong>nghe một lần không đủ đau</strong>."</p>
+<hr>
+<p>Anh Hải ngồi yên một lúc, nhìn ra cửa sổ.</p>
+<p>Rồi anh quay lại hỏi thật bình tĩnh: "Bác sĩ ơi, nếu em kiêng hết mấy thứ đó, em sẽ sống thêm bao lâu?"</p>
+<p>Bác sĩ nhìn hồ sơ, ước tính: "Có thể thêm 15 đến 20 năm."</p>
+<p>Anh Hải gật đầu, đứng dậy, bắt tay bác sĩ: "Cảm ơn bác sĩ. Nhưng em nghĩ em sẽ chọn <strong>sống ít hơn mà vui hơn</strong>."</p>
+<p>Rồi anh bước ra, ghé ngay cái quán cà phê ngay dưới tòa nhà bệnh viện — cái quán mà anh để ý từ lúc vào khám.</p>
+<p>Bác sĩ nhìn theo, thở dài, rồi tự rót cho mình một ly trà — vì bác sĩ cũng... bị dị ứng cà phê từ năm ngoái.</p>
+      </div>
+      <footer class="joke-footer">
+        <a href="#top" class="back-top">↑ Lên đầu</a>
+      </footer>
+    </article>
+
+    <article class="joke-card" id="2026-06-29-09-15">
+      <header class="joke-header">
+        <time class="joke-date">Thứ hai, 29 tháng 6, 2026 — 09:15</time>
+        <span class="word-count">217 từ</span>
+      </header>
+      <div class="joke-body">
+        <h1>Nghề Của Ba</h1>
+<p>Cô giáo hỏi cả lớp: "Các em hãy kể nghề nghiệp của ba mình nhé!"</p>
+<p>Bé Lan giơ tay: "Ba em là bác sĩ! Ba chữa bệnh cho mọi người ạ."</p>
+<p>Bé Tuấn tiếp theo: "Ba em là kỹ sư! Ba xây nhà cao tầng ạ."</p>
+<p>Đến lượt bé Bi ngồi cuối lớp, cậu đứng lên, ngập ngừng một chút rồi nói: "Ba em... là <strong>chuyên gia giải quyết vấn đề</strong> ạ."</p>
+<p>Cô giáo gật đầu hài lòng: "Ồ hay đấy! Ba em làm gì cụ thể nào?"</p>
+<p>Bi nghĩ một giây rồi giải thích: "Mỗi khi nhà có vấn đề, mọi người gọi cho ba. Ba đến, nhìn một lúc, rồi nói <em>'Để ba xem'</em>, rồi... ba gọi thợ đến sửa ạ."</p>
+<hr>
+<p>Cô giáo bật cười. Cả lớp cũng cười.</p>
+<p>Bi nhún vai, hoàn toàn bình thản: "Nhưng mà cô ơi, ba em nói đó là <strong>kỹ năng quan trọng nhất</strong>: biết mình không biết làm gì, và biết gọi ai để làm."</p>
+<p>Cô giáo gật đầu, lần này thật lòng: "Bi nói đúng. Ba Bi thực ra rất khôn đấy."</p>
+<p>Về nhà, Bi kể lại cho ba nghe. Ba Bi nghe xong, gật gù thỏa mãn, rồi lấy điện thoại gọi ngay cho thợ điện vì bóng đèn phòng khách vừa hỏng.</p>
+      </div>
+      <footer class="joke-footer">
+        <a href="#top" class="back-top">↑ Lên đầu</a>
+      </footer>
+    </article>
+
+    <article class="joke-card" id="2026-06-28-08-00">
+      <header class="joke-header">
+        <time class="joke-date">Chủ nhật, 28 tháng 6, 2026 — 08:00</time>
+        <span class="word-count">205 từ</span>
+      </header>
+      <div class="joke-body">
+        <h1>Bài Kiểm Tra Toán</h1>
+<p>Thầy giáo trả bài kiểm tra, mặt đỏ gay nhìn thẳng vào học sinh cuối lớp.</p>
+<p>"Nam! Bài em được 2 điểm. Em có biết tại sao không?"</p>
+<p>Nam đứng dậy, nhăn mặt suy nghĩ một lúc rồi thật thà đáp: "Dạ... vì em chép bài của Hùng mà Hùng được 4 điểm ạ?"</p>
+<p>Cả lớp phá ra cười. Thầy giáo thở dài.</p>
+<p>"Không phải! Vì bài của Hùng, câu số 3 viết <em>'Em không biết làm bài này'</em>. Còn bài của em viết <em>'Em cũng không biết làm bài này'</em>!"</p>
+<hr>
+<p>Nam ngồi xuống, gật gù vẻ tâm đắc, thì thầm với bạn bên cạnh: "Lần sau mình phải chép thằng khác, đứa nào <strong>biết làm</strong> ấy."</p>
+<p>Thầy giáo vốn tai thính, nghe thấy, lắc đầu bước tiếp.</p>
+<p>Cuối buổi học, thầy gọi Nam lại dặn dò: "Em về nhà học bài cho tử tế vào. Điểm 2 mà còn cười được, thầy phục em thật đấy."</p>
+<p>Nam nghiêm túc cúi đầu: "Dạ thưa thầy, em cười vì em vui. Em vui vì lần này em không bị <strong>1 điểm</strong> như kỳ trước ạ."</p>
+<p>Thầy giáo đứng yên một giây, rồi quay đi — miệng cũng bắt đầu hơi nhếch lên.</p>
+      </div>
+      <footer class="joke-footer">
+        <a href="#top" class="back-top">↑ Lên đầu</a>
+      </footer>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    Trang được tạo tự động từ các file markdown trong thư mục <code>jokes/</code>
+  </footer>
+</body>
+</html>
