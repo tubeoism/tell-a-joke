@@ -4,349 +4,262 @@ const fs = require('fs');
 const path = require('path');
 
 const JOKES_DIR = path.join(__dirname, 'jokes');
-const OUTPUT_FILE = path.join(__dirname, 'index.html');
+const OUT_DIR   = path.join(__dirname, 'dist');
+const OUT_FILE  = path.join(OUT_DIR, 'index.html');
 
-function parseFilename(filename) {
-  const match = filename.match(/^(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})\.md$/);
-  if (!match) return null;
-  const [, year, month, day, hour, minute] = match;
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+function parseFilename(name) {
+  const m = name.match(/^(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})\.md$/);
+  if (!m) return null;
+  const [, year, month, day, hour, minute] = m;
   return { year, month, day, hour, minute };
 }
 
-function formatDate(parts) {
-  const days = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-  const d = new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:00`);
-  const dayName = days[d.getDay()];
-  return `${dayName}, ${parseInt(parts.day, 10)} tháng ${parseInt(parts.month, 10)}, ${parts.year} — ${parts.hour}:${parts.minute}`;
+function formatDate({ year, month, day, hour, minute }) {
+  const DOW = ['Chủ nhật','Thứ hai','Thứ ba','Thứ tư','Thứ năm','Thứ sáu','Thứ bảy'];
+  const d = new Date(`${year}-${month}-${day}T${hour}:${minute}:00`);
+  return `${DOW[d.getDay()]}, ${+day} tháng ${+month} năm ${year} · ${hour}:${minute}`;
 }
 
 function mdToHtml(md) {
-  let html = md
-    // headings
+  return md
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    // horizontal rule
+    .replace(/^## (.+)$/gm,  '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,   '<h1>$1</h1>')
     .replace(/^---$/gm, '<hr>')
-    // bold italic
     .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    // bold
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // italic
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    // blank lines -> paragraph breaks
-    .split(/\n\n+/)
+    .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,         '<em>$1</em>')
+    .split(/\n{2,}/)
     .map(block => {
       block = block.trim();
       if (!block) return '';
       if (/^<(h[1-6]|hr)/.test(block)) return block;
-      // preserve line breaks within a paragraph
-      block = block.replace(/\n/g, '<br>');
-      return `<p>${block}</p>`;
+      return `<p>${block.replace(/\n/g, '<br>')}</p>`;
     })
     .filter(Boolean)
     .join('\n');
-  return html;
-}
-
-function slugify(str) {
-  return str.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 }
 
 function extractTitle(md) {
-  const match = md.match(/^# (.+)$/m);
-  return match ? match[1] : 'Truyện cười';
+  const m = md.match(/^# (.+)$/m);
+  return m ? m[1] : 'Truyện cười';
 }
 
-function countWords(md) {
-  return md.replace(/[#*`\-_]/g, '').trim().split(/\s+/).length;
+function wordCount(md) {
+  return md.replace(/[#*`\-_\[\]]/g, '').trim().split(/\s+/).length;
 }
 
-function buildSite() {
-  const files = fs.readdirSync(JOKES_DIR)
+// ── build ─────────────────────────────────────────────────────────────────────
+
+function build() {
+  if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
+
+  const jokes = fs.readdirSync(JOKES_DIR)
     .filter(f => f.endsWith('.md'))
     .map(f => {
       const parts = parseFilename(f);
       if (!parts) return null;
-      const content = fs.readFileSync(path.join(JOKES_DIR, f), 'utf8');
-      return { filename: f, parts, content };
+      const raw = fs.readFileSync(path.join(JOKES_DIR, f), 'utf8');
+      return {
+        id:    f.replace('.md', ''),
+        title: extractTitle(raw),
+        date:  formatDate(parts),
+        words: wordCount(raw),
+        html:  mdToHtml(raw),
+      };
     })
     .filter(Boolean)
-    .sort((a, b) => b.filename.localeCompare(a.filename)); // newest first
+    .sort((a, b) => b.id.localeCompare(a.id)); // newest first
 
-  const jokes = files.map(({ filename, parts, content }) => {
-    const title = extractTitle(content);
-    const wordCount = countWords(content);
-    const dateLabel = formatDate(parts);
-    const id = slugify(filename.replace('.md', ''));
-    const bodyHtml = mdToHtml(content);
-    return { id, title, dateLabel, wordCount, bodyHtml };
-  });
+  const nav = jokes
+    .map(j => `<a href="#${j.id}" class="chip">${j.title}</a>`)
+    .join('');
 
-  const navItems = jokes
-    .map(j => `<li><a href="#${j.id}">${j.title}</a></li>`)
-    .join('\n        ');
-
-  const cards = jokes.map(j => `
-    <article class="joke-card" id="${j.id}">
-      <header class="joke-header">
-        <time class="joke-date">${j.dateLabel}</time>
-        <span class="word-count">${j.wordCount} từ</span>
-      </header>
-      <div class="joke-body">
-        ${j.bodyHtml}
-      </div>
-      <footer class="joke-footer">
-        <a href="#top" class="back-top">↑ Lên đầu</a>
-      </footer>
-    </article>`).join('\n');
-
-  const total = jokes.length;
+  const cards = jokes.map(({ id, title, date, words, html }) => `
+  <article id="${id}" class="card">
+    <div class="card-meta">
+      <span class="card-date">${date}</span>
+      <span class="card-words">${words} từ</span>
+    </div>
+    <div class="card-body">${html}</div>
+    <a href="#header" class="card-top" aria-label="Lên đầu trang">↑</a>
+  </article>`).join('\n');
 
   const html = `<!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Tuyển tập truyện cười ngắn tiếng Việt — mỗi truyện dưới 300 từ">
-  <title>Kể Chuyện Cười</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Truyện cười ngắn mỗi ngày — dưới 300 từ">
+<title>Kể Chuyện Cười</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-    :root {
-      --bg:       #faf8f5;
-      --surface:  #ffffff;
-      --border:   #e8e2d9;
-      --text:     #2c2a27;
-      --muted:    #8a8278;
-      --accent:   #c0392b;
-      --accent-light: #fdf2f1;
-      --shadow:   0 2px 12px rgba(0,0,0,0.07);
-      --radius:   14px;
-      --font:     'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
-    }
+:root{
+  --ink:   #1a1816;
+  --sub:   #6b6560;
+  --line:  #e4ddd5;
+  --page:  #f7f4f0;
+  --card:  #ffffff;
+  --red:   #b83232;
+  --red-bg:#fef2f2;
+  --r: 12px;
+}
 
-    html { scroll-behavior: smooth; }
+html{scroll-behavior:smooth}
 
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 17px;
-      line-height: 1.8;
-      -webkit-text-size-adjust: 100%;
-    }
+body{
+  font-family:'Be Vietnam Pro',system-ui,sans-serif;
+  background:var(--page);
+  color:var(--ink);
+  font-size:17px;
+  line-height:1.85;
+  min-height:100svh;
+}
 
-    /* ── HEADER ── */
-    #top {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 20px 20px 0;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 1px 8px rgba(0,0,0,0.06);
-    }
+/* ── header ── */
+#header{
+  position:sticky;top:0;z-index:10;
+  background:rgba(247,244,240,.92);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+  padding:14px 16px 0;
+}
 
-    .site-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: -0.02em;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+.brand{
+  display:flex;align-items:baseline;gap:8px;
+}
+.brand-name{
+  font-size:1.1rem;font-weight:700;
+  color:var(--red);letter-spacing:-.02em;
+}
+.brand-count{
+  font-size:.75rem;color:var(--sub);font-weight:400;
+}
 
-    .site-title .emoji { font-size: 1.3rem; }
+.chips{
+  display:flex;gap:6px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:12px 0;
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex-shrink:0;
+  padding:5px 13px;
+  border:1.5px solid var(--line);
+  border-radius:99px;
+  font-size:.72rem;font-weight:600;
+  color:var(--sub);
+  text-decoration:none;
+  white-space:nowrap;
+  transition:border-color .15s,color .15s,background .15s;
+}
+.chip:hover,.chip:focus-visible{
+  border-color:var(--red);
+  color:var(--red);
+  background:var(--red-bg);
+  outline:none;
+}
 
-    .site-subtitle {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-top: 2px;
-      font-weight: 400;
-    }
+/* ── feed ── */
+main{
+  max-width:640px;
+  margin:0 auto;
+  padding:20px 16px 72px;
+  display:flex;flex-direction:column;gap:16px;
+}
 
-    /* ── NAV ── */
-    .joke-nav {
-      margin-top: 14px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      padding-bottom: 14px;
-    }
-    .joke-nav::-webkit-scrollbar { display: none; }
+/* ── card ── */
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  overflow:hidden;
+  position:relative;
+}
 
-    .joke-nav ol {
-      display: flex;
-      gap: 8px;
-      list-style: none;
-      width: max-content;
-    }
+.card-meta{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 18px;
+  background:var(--red-bg);
+  border-bottom:1px solid #f3d5d5;
+}
+.card-date{font-size:.7rem;font-weight:600;color:var(--red)}
+.card-words{font-size:.68rem;color:#c07070;white-space:nowrap}
 
-    .joke-nav a {
-      display: block;
-      padding: 6px 14px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: var(--text);
-      text-decoration: none;
-      white-space: nowrap;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
-    }
-    .joke-nav a:hover, .joke-nav a:focus {
-      background: var(--accent-light);
-      border-color: var(--accent);
-      color: var(--accent);
-      outline: none;
-    }
+.card-body{padding:20px 18px 14px}
 
-    /* ── MAIN ── */
-    main {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 24px 16px 60px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
+.card-body h1{
+  font-size:1.15rem;font-weight:700;line-height:1.4;
+  margin-bottom:14px;color:var(--ink);
+}
+.card-body h2{font-size:1rem;font-weight:600;margin:14px 0 8px}
+.card-body h3{font-size:.9rem;font-weight:600;margin:12px 0 6px}
+.card-body p{margin-bottom:13px}
+.card-body p:last-child{margin-bottom:0}
+.card-body strong{font-weight:700}
+.card-body em{font-style:italic;color:#444}
+.card-body hr{border:none;border-top:1px dashed var(--line);margin:18px 0}
 
-    /* ── CARDS ── */
-    .joke-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
+.card-top{
+  display:block;
+  position:absolute;bottom:12px;right:14px;
+  font-size:.7rem;font-weight:600;
+  color:var(--line);
+  text-decoration:none;
+  transition:color .15s;
+}
+.card-top:hover{color:var(--red)}
 
-    .joke-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 20px;
-      background: var(--accent-light);
-      border-bottom: 1px solid #f0d5d3;
-      gap: 12px;
-    }
+/* ── footer ── */
+footer{
+  text-align:center;
+  padding:0 16px 40px;
+  font-size:.72rem;color:var(--sub);
+}
+footer code{
+  background:var(--line);
+  padding:1px 6px;border-radius:4px;
+  font-family:monospace;font-size:.68rem;
+}
 
-    .joke-date {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--accent);
-      letter-spacing: 0.01em;
-    }
-
-    .word-count {
-      font-size: 0.7rem;
-      color: #b07068;
-      white-space: nowrap;
-    }
-
-    .joke-body {
-      padding: 22px 20px;
-    }
-
-    .joke-body h1 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      line-height: 1.4;
-      margin-bottom: 16px;
-      color: var(--text);
-    }
-
-    .joke-body h2 {
-      font-size: 1.05rem;
-      font-weight: 600;
-      margin: 16px 0 10px;
-    }
-
-    .joke-body h3 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin: 14px 0 8px;
-    }
-
-    .joke-body p {
-      margin-bottom: 14px;
-      color: var(--text);
-    }
-
-    .joke-body p:last-child { margin-bottom: 0; }
-
-    .joke-body strong { font-weight: 700; color: var(--text); }
-    .joke-body em { font-style: italic; }
-
-    .joke-body hr {
-      border: none;
-      border-top: 1px dashed var(--border);
-      margin: 20px 0;
-    }
-
-    .joke-footer {
-      padding: 12px 20px;
-      border-top: 1px solid var(--border);
-      background: var(--bg);
-      text-align: right;
-    }
-
-    .back-top {
-      font-size: 0.75rem;
-      color: var(--muted);
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .back-top:hover { color: var(--accent); }
-
-    /* ── FOOTER ── */
-    .site-footer {
-      text-align: center;
-      padding: 24px 16px 40px;
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 400px) {
-      body { font-size: 16px; }
-      .joke-body { padding: 18px 16px; }
-      .joke-header { padding: 12px 16px; }
-    }
-  </style>
+@media(max-width:400px){
+  body{font-size:16px}
+  .card-body{padding:16px 14px 12px}
+  .card-meta{padding:9px 14px}
+}
+</style>
 </head>
 <body>
-  <div id="top">
-    <div class="site-title">
-      <span class="emoji">😄</span>
-      Kể Chuyện Cười
-    </div>
-    <p class="site-subtitle">${total} truyện · mỗi truyện dưới 300 từ</p>
-    <nav class="joke-nav" aria-label="Danh sách truyện">
-      <ol>
-        ${navItems}
-      </ol>
-    </nav>
+<div id="header">
+  <div class="brand">
+    <span class="brand-name">😄 Kể Chuyện Cười</span>
+    <span class="brand-count">${jokes.length} truyện</span>
   </div>
+  <nav class="chips" aria-label="Danh sách truyện">
+    ${nav}
+  </nav>
+</div>
 
-  <main>
-    ${cards}
-  </main>
+<main>${cards}
+</main>
 
-  <footer class="site-footer">
-    Trang được tạo tự động từ các file markdown trong thư mục <code>jokes/</code>
-  </footer>
+<footer>
+  Sinh tự động từ <code>jokes/*.md</code> · chạy <code>node build.js</code> để cập nhật
+</footer>
 </body>
 </html>`;
 
-  fs.writeFileSync(OUTPUT_FILE, html, 'utf8');
-  console.log(`✓ Đã tạo index.html với ${total} truyện cười`);
-  jokes.forEach(j => console.log(`  · ${j.title} (${j.wordCount} từ)`));
+  fs.writeFileSync(OUT_FILE, html, 'utf8');
+  console.log(`✓ dist/index.html — ${jokes.length} truyện`);
+  jokes.forEach(j => console.log(`  ${j.id}  "${j.title}"  ${j.words} từ`));
 }
 
-buildSite();
+build();
